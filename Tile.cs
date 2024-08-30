@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.UI;
+
 public class Tile : MonoBehaviour
 {
     public enum TileType
@@ -9,15 +10,20 @@ public class Tile : MonoBehaviour
         Forest,
         House
     }
+
     public TileType type;
     public int resources = 0;
+    public int maxResources = 5; // New variable for maximum resources
+
     private SpriteRenderer spriteRenderer;
     private Text resourceText;
+
     void Awake()
     {
         spriteRenderer = GetComponent<SpriteRenderer>();
         CreateResourceText();
     }
+
     void CreateResourceText()
     {
         GameObject textObj = new GameObject("ResourceText");
@@ -33,16 +39,22 @@ public class Tile : MonoBehaviour
         rectTransform.sizeDelta = new Vector2(1, 1);
         rectTransform.localScale = new Vector3(0.01f, 0.01f, 1);
     }
+
     public void SetType(TileType newType)
     {
         type = newType;
         UpdateAppearance();
         if (type == TileType.Forest)
         {
-            resources = Random.Range(1, 5);
+            resources = Random.Range(1, maxResources + 1);
+        }
+        else
+        {
+            resources = 0;
         }
         UpdateResourceText();
     }
+
     void UpdateAppearance()
     {
         switch (type)
@@ -61,16 +73,32 @@ public class Tile : MonoBehaviour
                 break;
         }
     }
+
     public bool HarvestResource()
     {
         if (resources > 0)
         {
             resources--;
             UpdateResourceText();
+
+            // Check if resources are depleted
+            if (resources == 0 && type == TileType.Forest)
+            {
+                ConvertToGround();
+            }
+
             return true;
         }
         return false;
     }
+
+    void ConvertToGround()
+    {
+        SetType(TileType.Ground);
+        UpdateAppearance();
+        UpdateResourceText();
+    }
+
     void UpdateResourceText()
     {
         if (type == TileType.Forest && resources > 0)
